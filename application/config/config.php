@@ -27,7 +27,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $explode = explode('/',$_SERVER['REQUEST_URI']);
 
-$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/'.$explode[1].'/'.$explode[2];
+$config['base_url'] = 'http://'.$_SERVER['HTTP_HOST'].'/'.$explode[1].'/'.$explode[2].'/'.$explode[3];
 
 /*
 |--------------------------------------------------------------------------

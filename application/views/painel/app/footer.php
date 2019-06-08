@@ -162,6 +162,50 @@
 
         alert('ok');
     }
+    
+    function newPostTable(acao,tabela,tipo) {
+
+        if(tipo){
+            $('.modal').modal('show');
+
+            $.ajax({
+                url: DIR+'Ajax/openFormFields',
+                data: {acao:acao,tabela:tabela,tipo:tipo},
+                type: 'POST',
+
+                error: function (res) {
+
+                    alert('Erro ao Carregar o Conteudo');
+
+                },
+                success: function (data) {
+
+                    if(data){
+
+                        if(data == 'reload_action'){
+                            window.location.reload();
+                        }else{
+                            $('.modal .modal-body').html(data);
+                        }
+
+                    }else{
+
+                        alert('Erro ao Carregar e Exibir o Conteudo');
+
+                    }
+
+
+
+                }
+            });
+
+        }else{
+
+            $('.modal').modal('show');
+        }
+        
+    }
+    
 </script>
 </body>
 

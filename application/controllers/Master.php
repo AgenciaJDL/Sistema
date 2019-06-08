@@ -46,12 +46,16 @@ class Master extends CI_Controller {
 
             ]);
 
-            $this->load->view('app/header',$array);
-            $this->load->view('app/navigation',$array);
-            $this->load->view('app/footer',$array);
+            $this->load->view('painel/app/header',$array);
+
+
+            $this->load->view('painel/app/navigation',$array);
+
+
+            $this->load->view('painel/app/footer',$array);
 
         else:
-        $this->load->view('login');
+        $this->load->view('painel/login');
         endif;
     }
 }

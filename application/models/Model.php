@@ -12,6 +12,54 @@ class Model extends CI_Model
         @session_start();
     }
 
+    public function newbuttomtable($post){
+
+        $return = '';
+
+        $this->db->from('menu_admin');
+        $this->db->where('id',$post['campo']);
+        $get = $this->db->get();
+        $count = $get->num_rows();
+
+        if($count > 0):
+            $result = $get->result_array()[0];
+
+
+        if(!empty($result['condicao'])):
+
+            $explode = explode(',',$result['condicao']);
+
+
+        if(!empty($explode[0]) and !empty($explode[1]) and $explode[0] == 'tipo'):
+
+            $return = ' <a href="javascript:newPostTable(1,'.$post['campo'].','.$explode[1].');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
+
+        else:
+
+            $return = ' <a href="javascript:newPostTable(1,'.$post['campo'].');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
+
+        endif;
+
+
+
+
+        else:
+
+     $return = ' <a href="javascript:newPostTable(1,'.$post['campo'].');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
+
+        endif;
+
+
+            $return .= '<div class="clearfixs"></div>';
+            $return .= '<br>';
+
+
+       endif;
+
+        return $return;
+
+    }
+
     public function recupera_fields($arr,$id){
 
 
@@ -147,7 +195,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         $arr['usage'] = $usage;
 
-        $this->load->view('sys/data/usages',$arr);
+        $this->load->view('painel/sys/data/usages',$arr);
 
         return $return;
 
@@ -159,7 +207,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         $arr['coluna'] = $cols;
         $arr['size'] = $size;
 
-        $this->load->view('sys/data/charts',$arr);
+        $this->load->view('painel/sys/data/charts',$arr);
 
         return $return;
 
@@ -176,7 +224,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         $arr['sys'] = $arrs[0];
 
 
-        $this->load->view('sys/data/'.$view,$arr);
+        $this->load->view('painel/sys/data/'.$view,$arr);
 
 
 

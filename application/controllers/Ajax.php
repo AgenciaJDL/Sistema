@@ -13,6 +13,15 @@ class Ajax extends CI_Controller
     }
 
 
+    public function openFormFields(){
+        if ($this->Model->session_admin() == true):
+
+
+
+            
+        endif;
+        }
+
     public function NavegacaoView(){
         if ($this->Model->session_admin() == true):
 
@@ -47,17 +56,17 @@ class Ajax extends CI_Controller
 
 
             if($_POST['campo'] == 0):
-                $this->load->view('app/header',$array);
-                $this->load->view('app/navigation',$array);
-                $this->load->view('app/footer',$array);
+                $this->load->view('painel/app/header',$array);
+                $this->load->view('painel/app/navigation',$array);
+                $this->load->view('painel/app/footer',$array);
 
             else:
-                $this->load->view('sys/data/ViewPost',$arr);
-                $this->load->view('sys/Ons/Js');
+                $this->load->view('painel/sys/data/ViewPost',$arr);
+                $this->load->view('painel/sys/Ons/Js');
 
             endif;
 
-            $this->load->view('sys/Ons/addOns',$array);
+            $this->load->view('painel/sys/Ons/addOns',$array);
 
             else:
 
