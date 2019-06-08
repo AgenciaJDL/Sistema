@@ -13,14 +13,52 @@ class Ajax extends CI_Controller
     }
 
 
-    public function openFormFields(){
-        if ($this->Model->session_admin() == true):
+    public function formFilds(){
+        $return = '';
+
+        $this->db->from('menu_admin');
+        $this->db->where('id',$_POST['tabela']);
+        $get = $this->db->get();
+        $menu = $get->result_array()[0];
+
+        $campoexplode = explode(',',$menu['tb']);
 
 
+        for($i=0;$i<count($campoexplode);$i++):
 
-            
-        endif;
-        }
+if($campoexplode[$i] == 'nome' and $_POST['tabela'] == '30' or $campoexplode[$i] == 'nome' and $_POST['tabela'] == '31'):
+    $campowidth = '95%';
+elseif($campoexplode[$i] == 'conteudo'):
+    $campowidth = '100%';
+
+else:
+        $campowidth = '30%';
+
+endif;
+
+            if($this->Model->TitleSearch($campoexplode[$i]) == true):
+                $return .= $this->Model->TitleReplace($campoexplode[$i]);
+                else:
+
+                    $return .= $this->Model->campos_filtro(0,$campoexplode[$i],$_POST['tabela'],$campowidth
+                    );
+
+            endif;
+
+
+        endfor;
+
+        echo ' <script>
+    var editor = new FroalaEditor(\'#froala-editor\'); 
+    
+    $(document).ready(function() {
+    $(\'select\').select2();
+});    
+  </script>';
+
+        echo $return;
+
+    }
 
     public function NavegacaoView(){
         if ($this->Model->session_admin() == true):

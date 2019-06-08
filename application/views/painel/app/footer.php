@@ -133,6 +133,9 @@
 <script src="<?php echo base_url('assets/codes/') ?>js/bootstrap.min.js"></script>
 
 
+<script type='text/javascript' src='https://cdn.jsdelivr.net/npm/froala-editor@3.0.0-rc.2/js/froala_editor.pkgd.min.js'></script>
+
+
 <script src="<?php echo base_url('assets/codes/') ?>js/nifty.min.js"></script>
 
 
@@ -151,6 +154,7 @@
 
 <script src="<?php echo base_url('assets/codes/') ?>js/demo/dashboard.js"></script>
 <script src="<?php echo base_url('assets/codes/') ?>js/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
 
 
 <script src="<?php echo base_url('assets/codes/') ?>plugins/datatables/media/js/jquery.dataTables.js"></script>
@@ -166,10 +170,10 @@
     function newPostTable(acao,tabela,tipo) {
 
         if(tipo){
-            $('.modal').modal('show');
+            $('.modal').modal({backdrop: 'static', keyboard: false});
 
             $.ajax({
-                url: DIR+'Ajax/openFormFields',
+                url: DIR+'Ajax/formFilds',
                 data: {acao:acao,tabela:tabela,tipo:tipo},
                 type: 'POST',
 
@@ -201,7 +205,39 @@
 
         }else{
 
-            $('.modal').modal('show');
+            $('.modal').modal({backdrop: 'static', keyboard: false});
+
+            $.ajax({
+                url: DIR+'Ajax/formFilds',
+                data: {acao:acao,tabela:tabela},
+                type: 'POST',
+
+                error: function (res) {
+
+                    alert('Erro ao Carregar o Conteudo');
+
+                },
+                success: function (data) {
+
+                    if(data){
+
+                        if(data == 'reload_action'){
+                            window.location.reload();
+                        }else{
+                            $('.modal .modal-body').html(data);
+                        }
+
+                    }else{
+
+                        alert('Erro ao Carregar e Exibir o Conteudo');
+
+                    }
+
+
+
+                }
+            });
+
         }
         
     }

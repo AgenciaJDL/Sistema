@@ -60,14 +60,14 @@
                 </table>
             </div>
         </div>
-        <div class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal" role="dialog">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title"><?php $arry['sel'] = 'id'; $arry['t1'] = 'menu_admin'; $arry['t2'] = 'menu_admin';
                             echo $this->Model->recupera_fields($arry,$post['campo'])[0]['nome']; ?></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" class="close btn-destroy" data-dismiss="modal" aria-label="Fechar" onclick="editor.destroy();$('.modal .modal-body').html('<h4>Carregando...</h4>');">
+                            <span aria-hidden="true" style="font-size: 15px;">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
@@ -76,7 +76,7 @@
                     <div class="clearfix"></div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('.modal .modal-body').html('<h4>Carregando...</h4>');">Fechar</button>
                         <button type="button" class="btn btn-primary">Salvar mudanças</button>
                     </div>
                 </div>
@@ -109,4 +109,28 @@
 
         } );
     } );
+</script>
+
+<script>
+
+    var editor = new FroalaEditor('#froala-editor')
+
+    // Destroy action.
+    document.querySelector('.btn-destroy').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        if (editor) {
+            editor.destroy()
+        }
+    });
+
+    // Initialize action.
+    document.querySelector('a#btn-init').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        if (!editor) {
+            editor = new FroalaEditor('#froala-editor');
+        }
+    });
+
 </script>

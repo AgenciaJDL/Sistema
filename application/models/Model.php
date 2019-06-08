@@ -423,19 +423,29 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
             case '|admin_credentials|':
                 $varReturn = true;
                 break;
+                case '|PAGINA_TITLE|':
+                $varReturn = true;
+                break;
+                case '|permissao_admin|':
+                $varReturn = true;
+                break;
             case '|admin_title|':
                 $varReturn = true;
                 break;
             case '|user_title|':
                 $varReturn = true;
                 break;
+                case '|user_title|':
+                $varReturn = true;
+                break;
+
+                case '|user_docs|':
+                $varReturn = true;
+                break;
             case '|user_credentials|':
                 $varReturn = true;
                 break;
             case '|user_address|':
-                $varReturn = true;
-                break;
-            case '|user_docs|':
                 $varReturn = true;
                 break;
 
@@ -477,6 +487,14 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         switch ($field) {
             case '|admin_title|':
                 $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Informações do Administrador</h4>';
+                break;
+
+            case '|PAGINA_TITLE|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Criação & Estilo da Pagina</h4>';
+                break;
+
+            case '|permissao_admin|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Credenciais do Administrador</h4>';
                 break;
 
             case '|lote_title|':
@@ -852,7 +870,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         return $fields;
     }
-    public function campos_filtro($id,$fields,$tabela){
+    public function campos_filtro($id,$fields,$tabela,$wid){
 
         if($id > 0):
             $this->db->from($tabela);
@@ -874,20 +892,27 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
             $valuetxt = '';
         endif;
 
-        $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+        $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                         <input type="text" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
                     </div>';
 
+        if($fields == 'pass'):
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <input type="password" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+                    </div>';
+        endif;
+
         if($fields == 'dias'):
-            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                         <input type="number" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
                     </div>';
         endif;
 
         if($fields == 'dia_ida' or $fields == 'dia_volta' or $fields == 'data_pedido'):
-            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                         <input type="date" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
                     </div>';
@@ -895,23 +920,23 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         if($fields == 'image' or $fields == 'image1' or $fields == 'image2' or $fields == 'image3' or $fields == 'image4' or $fields == 'image5'):
 
-            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                         <input type="file" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'">
                     </div>';
         endif;
-        if($fields == 'descricao'):
+        if($fields == 'conteudo'):
 
-            $tfields = '<div class="form-group" style="float: left;width: 100%;padding: 0 20px 0 20px;">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';padding: 0 20px 0 20px;">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <textarea name="'.$fields.'">'.$valuetxt.'</textarea>
+                        <textarea name="'.$fields.'" style="float:left;width:100%;height:250px;padding:20px;" id="froala-editor"> '.$valuetxt.'</textarea>
                     </div>';
 
         endif;
 
         if($fields == 'email'):
 
-            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                         <input type="email" class="form-control" name="'.$fields.'" id="'.$fields.'" '.$value.'>
                     </div>';
@@ -936,7 +961,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 $options .= '<option>Desativado</option>';
             endif;
 
-            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                   
                   <select class="form-control" name="'.$fields.'" id="'.$fields.'">
@@ -951,7 +976,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         endif;
 
 
-        if($fields == 'id_user' or $fields == 'id_passeio'):
+        if($fields == 'id_user' or $fields == 'id_passeio' or $fields == 'permissoes'):
             $options = '<option>Selecione uma Opção</option>';
 
 
@@ -964,6 +989,10 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 endif;
                 if($fields == 'id_passeio'):
                     $this->db->from('passeios');
+                endif;
+
+                if($fields == 'permissoes'):
+                    $this->db->from('permissoes');
                 endif;
                 $get = $this->db->get();
                 $users = $get->result_array();
@@ -990,6 +1019,9 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 if($fields == 'id_passeio'):
                     $this->db->from('passeios');
                 endif;
+                if($fields == 'permissoes'):
+                    $this->db->from('permissoes');
+                endif;
                 $get = $this->db->get();
                 $users = $get->result_array();
 
@@ -1000,7 +1032,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
             endif;
 
-            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
                   
                   <select class="js-example-basic-single form-control" name="'.$fields.'" id="'.$fields.'">

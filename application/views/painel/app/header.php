@@ -32,6 +32,8 @@
     <!--DataTables [ OPTIONAL ]-->
     <link href="<?php echo base_url('assets/codes/') ?>plugins/datatables/media/css/dataTables.bootstrap.css" rel="stylesheet">
     <link href="<?php echo base_url('assets/codes/') ?>plugins/datatables/extensions/Responsive/css/responsive.dataTables.min.css" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/froala-editor@3.0.0-rc.2/css/froala_editor.pkgd.min.css' rel='stylesheet' type='text/css' />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
     <script> var DIR = '<?php echo base_url();?>'; </script>
 
     <style type="text/css">
@@ -39,7 +41,9 @@
         .highlight {
             background-color:#ccffcc;
         }
-
+        .select2-container--open {
+            z-index: 9999999!important;
+        }
     </style>
 
 </head>
@@ -98,7 +102,7 @@
                                         <li><a href="<?php echo base_url('perfil');?>">Meu Perfil</a></li>
                                         <li><a href="https://jdlsites.com/loja-virtual/faq">FAQ</a></li>
                                         <li><a href="javascript:lock();">Sreen Lock</a></li>
-                                        <li><a href="javascrit:logout();" class="disabled">Logout</a></li>                                        </ul>
+                                        <li><a href="javascript:logout();" class="disabled">Logout</a></li>                                        </ul>
 
                                 </div>
                                 <div class="col-sm-4 col-md-4">
