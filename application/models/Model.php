@@ -1,0 +1,977 @@
+<?php
+if (!defined('BASEPATH')) exit('No direct script access allowed');
+
+class Model extends CI_Model
+{
+
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->database();
+        $this->db->reconnect();
+        @session_start();
+    }
+
+    public function recupera_fields($arr,$id){
+
+
+        $this->db->select(''.$arr['sel'].'');
+        $this->db->from(''.$arr['t1'].'');
+        $this->db->where('id',$id);
+        $get = $this->db->get();
+        $menu_admin = $get->result_array()[0];
+
+        $this->db->from(''.$arr['t2'].'');
+        $this->db->where('id',$menu_admin[$arr['sel']]);
+        $get = $this->db->get();
+        $result = $get->result_array();
+
+
+        return $result;
+
+    }
+
+
+    //Inicio Tables Admin Funções
+
+    public function rowstbodyViewAdmin($arr){
+
+        $this->db->select('tabela,condicao,th');
+        $this->db->from('menu_admin');
+        $this->db->where('status',1);
+        $this->db->where('id',$arr['campo']);
+        $get = $this->db->get();
+        $menu_admin = $get->result_array();
+
+        if(!empty($menu_admin[0]['condicao'])):
+        $explodeCond1 = explode('(//)',$menu_admin[0]['condicao']);
+        $this->db->from(''.$menu_admin[0]['tabela'].'');
+        for($i=0;$i<count($explodeCond1);$i++):
+            $explodeCond2 = explode(',',$explodeCond1[$i]);
+            $this->db->where($explodeCond2[0],$explodeCond2[1]);
+        endfor;
+        endif;
+
+
+        $this->db->order_by('id','desc');
+        $get = $this->db->get();
+        $count = $get->num_rows();
+        if($count > 0):
+            $result = $get->result_array();
+
+        foreach ($result as $value) {
+            echo $this->tbodyViewAdmin($menu_admin[0]['tabela'],$arr, $value);
+        }
+       endif;
+    }
+
+    public function tbodyViewAdmin($table,$arr,$value){
+        $return = '';
+        $this->db->select('th,response');
+        $this->db->from('menu_admin');
+        $this->db->where('status',1);
+        $this->db->where('id',$arr['campo']);
+        $get = $this->db->get();
+        $menu_admin = $get->result_array();
+        $forExplode = explode(',',$menu_admin[0]['th']);
+        $return .= '<tr id="'.$value['id'].'" lang="dsa">';
+        for($i=0;$i<count($forExplode);$i++):
+            if(trim($forExplode[$i]) == 'acoes'):
+
+                $styletd = 'style="text-align:center!important;"';
+
+                else:
+
+                $styletd = '';
+
+            endif;
+
+            $return .= '<td '.$styletd.'>'.$this->tabela_campos_filtro($menu_admin[0]['response'],$table,trim($forExplode[$i]),$value[trim($forExplode[$i])],$value).'</td>';
+        endfor;
+        $return .= '</tr>';
+        return $return;
+    }
+
+
+    public function theadViewAdmin($arr){
+        $return = '';
+        $this->db->select('th');
+        $this->db->from('menu_admin');
+        $this->db->where('status',1);
+        $this->db->where('id',$arr['campo']);
+        $get = $this->db->get();
+        $menu_admin = $get->result_array();
+        $forExplode = explode(',',$menu_admin[0]['th']);
+        $return .= '<tr>';
+        for($i=0;$i<count($forExplode);$i++):
+            $return .= '<th style="text-align: center;">'.$this->tabela_filtro(trim($forExplode[$i])).'</th>';
+        endfor;
+        $return .= '</tr>';
+        return $return;
+    }
+
+    //Fim Tables Admin Funções
+
+
+    public function frases_motivacionais(){
+        return 'As pessoas costumam dizer que a motivação não dura sempre. Bem, nem o efeito do banho, por isso recomenda-se diariamente.';
+    }
+
+
+    public function notificacoes(){
+
+$return = '<br><a class="media add-tooltip" style="text-align: center!important;padding: 10px;">Nenhuma Notificação a Exibir</a>';
+        /*
+        $return = ' <li>
+                                            <a href="#" class="media add-tooltip" data-title="Used space : 95%" data-container="body" data-placement="bottom">
+                                                <div class="media-left">
+                                                    <i class="demo-pli-data-settings icon-2x text-main"></i>
+                                                </div>
+                                                <div class="media-body">
+                                                    <p class="text-nowrap text-main text-semibold">HDD is full</p>
+                                                    <div class="progress progress-sm mar-no">
+                                                        <div style="width: 95%;" class="progress-bar progress-bar-danger">
+                                                            <span class="sr-only">95% Complete</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </li>';
+*/
+
+        return $return;
+    }
+
+    public function usages($usage){
+        $return = '';
+
+        $arr['usage'] = $usage;
+
+        $this->load->view('sys/data/usages',$arr);
+
+        return $return;
+
+    }
+
+    public function cols_sm($cols,$size){
+        $return = '';
+
+        $arr['coluna'] = $cols;
+        $arr['size'] = $size;
+
+        $this->load->view('sys/data/charts',$arr);
+
+        return $return;
+
+
+    }
+    public function charts($data,$view,$template,$arrs){
+
+
+
+        $return = '';
+
+
+        $arr['template'] = $template;
+        $arr['sys'] = $arrs[0];
+
+
+        $this->load->view('sys/data/'.$view,$arr);
+
+
+
+        return $return;
+
+    }
+
+
+    public function monitor_rodape(){
+
+
+        return '<div class="mainnav-widget">
+
+                        <div class="show-small">
+                            <a href="#" data-toggle="menu-widget" data-target="#demo-wg-server">
+                                <i class="demo-pli-monitor-2"></i>
+                            </a>
+                        </div>
+
+                        <div id="demo-wg-server" class="hide-small mainnav-widget-content">
+                            <ul class="list-group">
+                                <li class="list-header pad-no mar-ver">Metas & Acessos</li>
+                                <li class="mar-btm">
+                                    <span class="label label-primary pull-right">5%</span>
+                                    <p>Meta Diária</p>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar progress-bar-primary" style="width: 5%;">
+                                            <span class="sr-only">5%</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="mar-btm">
+                                    <span class="label label-purple pull-right">120</span>
+                                    <p>Acessos</p>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar progress-bar-purple" style="width: 75%;">
+                                            <span class="sr-only">0</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="pad-ver"><a href="#" class="btn btn-success btn-bock">Alterar Parâmetros </a></li>
+                            </ul>
+                        </div>
+                    </div>';
+    }
+
+
+    public function porcentagem_compara_dias($area_de_atuacao,$tipo,$dec_primario,$dec_secundario){
+
+
+        $return = 0;
+
+        if($area_de_atuacao == 'pedidos'):
+
+
+                if($tipo == 'pedidos'):
+
+
+                    if($dec_secundario > $dec_primario):
+
+                        $return = 100;
+
+                        else:
+
+                        $return = (100 - intval(((($dec_primario - $dec_secundario) / $dec_primario) * 100)));
+                    endif;
+                elseif($tipo == 'intencoes'):
+
+                    if($dec_secundario > $dec_primario):
+
+                        $return = 100;
+
+                    else:
+
+                        $return = (100 - intval(((($dec_primario - $dec_secundario) / $dec_primario) * 100)));
+                    endif;
+                endif;
+
+        endif;
+
+        return $return;
+
+    }
+    public function menu_admin($arr,$ordem){
+
+        $return = '';
+
+       if($arr['has_sub'] > 0):
+
+           $this->db->from('menu_admin');
+           $this->db->where('status_menu',1);
+           $this->db->where('status',1);
+           $this->db->where('sub_id',$arr['id']);
+           $this->db->order_by('ordem','desc');
+           $get = $this->db->get();
+
+           $menu_subs_count = $get->num_rows();
+
+           $menu_subs = $get->result_array();
+           $menu_sub_itens = '';
+           foreach ($menu_subs as $value){
+               if ($this->db->table_exists(''.$value['tabela'].'')):
+               $menu_sub_itens .= '<li ><a href="javascript:view(1,'.$value['id'].');">'.$value['nome'].'</a></li>';
+               else:
+                   $menu_sub_itens .= '<li ><a href="javascript:alerts(\'Table Não Encontrada no Banco de Dados\');">'.$value['nome'].'</a></li>';
+
+               endif;
+           }
+
+
+           if($ordem == 0):
+               $class = 'class="active-sub"';
+           else:
+               $class = '';
+           endif;
+
+           if($menu_subs_count > 0):
+               $arrow = '<i class="arrow"></i>';
+           else:
+               $arrow = '';
+           endif;
+
+           $return = '<li '.$class.'>
+                            <a href="javascript:void(0);">
+                                <i class="demo-pli-home"></i>
+                                <span class="menu-title">'.$arr['nome'].'</span>
+                                '.$arrow.'
+                            </a>
+
+                            <ul class="collapse">
+                                
+                            '.$menu_sub_itens.'
+
+                            </ul>
+                        </li>';
+
+
+        else:
+
+            if ($this->db->table_exists(''.$arr['tabela'].'')):
+            echo '<li ><a href="javascript:view(1,'.$arr['id'].');"> <i class="demo-pli-home"></i> '.$arr['nome'].'</a></li>';
+            else:
+            echo '<li ><a  href="javascript:alerts(\'Table Não Encontrada no Banco de Dados\');"> <i class="demo-pli-home"></i> '.$arr['nome'].'</a></li>';
+            endif;
+        endif;
+
+            return $return;
+    }
+
+    public function session_admin(){
+
+        if(isset($_SESSION['ID_ADMIN']) and isset($_SESSION['USER_ADMIN']) and  isset($_SESSION['IP_ADMIN'])  and  isset($_SESSION['EMAIL_ADMIN']) and isset($_SESSION['PASS_ADMIN'])):
+
+
+            try {
+            $this->db->from('administrador');
+            $this->db->where('id',$_SESSION['ID_ADMIN']);
+            $this->db->where('user',$_SESSION['USER_ADMIN']);
+            $this->db->where('email',$_SESSION['EMAIL_ADMIN']);
+            $this->db->where('pass',$_SESSION['PASS_ADMIN']);
+            $get = $this->db->get();
+            $count = $get->num_rows();
+
+            if($count > 0):
+
+                return true;
+
+            else:
+
+                unset($_SESSION['ID_ADMIN']);
+                unset($_SESSION['USER_ADMIN']);
+                unset($_SESSION['IP_ADMIN']);
+                unset($_SESSION['EMAIL_ADMIN']);
+                unset($_SESSION['PASS_ADMIN']);
+
+                return false;
+
+            endif;
+
+        } catch (Exception $e) {
+                return false;
+            }
+
+        else:
+
+            return false;
+
+        endif;
+
+    }
+
+    public function TitleSearch($field){
+
+        $varReturn = false;
+        switch ($field) {
+            case '|admin_credentials|':
+                $varReturn = true;
+                break;
+            case '|admin_title|':
+                $varReturn = true;
+                break;
+            case '|user_title|':
+                $varReturn = true;
+                break;
+            case '|user_credentials|':
+                $varReturn = true;
+                break;
+            case '|user_address|':
+                $varReturn = true;
+                break;
+            case '|user_docs|':
+                $varReturn = true;
+                break;
+
+            case '|user_anexos_docs|':
+                $varReturn = true;
+                break;
+
+            case '|leilao_title|':
+                $varReturn = true;
+                break;
+
+            case '|lote_title|':
+                $varReturn = true;
+                break;
+
+            case '|lote_regras|':
+                $varReturn = true;
+                break;
+
+            case '|lote_anexos|':
+                $varReturn = true;
+                break;
+
+            case '|outros_anexos|':
+                $varReturn = true;
+                break;
+
+            case '|lote_descricao|':
+                $varReturn = true;
+                break;
+
+        }
+
+        return $varReturn;
+    }
+    public function TitleReplace($field){
+
+        $varReturn = $field;
+        switch ($field) {
+            case '|admin_title|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Informações do Administrador</h4>';
+                break;
+
+            case '|lote_title|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Informações do Lote</h4>';
+                break;
+
+            case '|lote_regras|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Regras do Lote</h4>';
+                break;
+
+            case '|admin_credentials|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;margin-top: 20px;">Credenciais do Administrador</h4>';
+                break;
+
+            case '|user_title|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;margin-top: 20px;">Informações do Usuario</h4>';
+                break;
+            case '|user_address|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Endereço do Usuario</h4>';
+                break;
+            case '|user_docs|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Documentos do Usuario</h4>';
+                break;
+
+            case '|user_credentials|':
+                $varReturn = '<h6><a href="javascript:alterar_pass();">ALTERAR SENHA</a></h6>';
+                break;
+            case '|leilao_title|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Informações do Leilão</h4>';
+                break;
+
+            //Anexar DOCUMENTOS
+            case '|user_anexos_docs|':
+                $varReturn = '';
+                break;
+
+            case '|lote_anexos|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Arquivos para Anexar</h4>';
+                break;
+
+            case '|lote_descricao|':
+                $varReturn = '<h4 style="float:left;width:100%;text-align: center;margin-bottom: 20px;">Descrição do Lote</h4>';
+                break;
+            case '|outros_anexos|':
+                $varReturn = '';
+                break;
+
+
+        }
+
+        return $varReturn;
+    }
+    public function tabela_filtro($field){
+
+        switch ($field) {
+            case 'status':
+                $field = "Status";
+                break;
+
+            case 'id':
+                $field = "Registro";
+                break;
+
+
+            case 'id_user':
+                $field = "Cliente";
+                break;
+
+            case 'id_cliente':
+                $field = "Cliente";
+                break;
+
+            case 'oq_inclui':
+                $field = "Incluso";
+                break;
+            case 'obs':
+                $field = "Observação";
+                break;
+
+            case 'valor_custo_adulto':
+                $field = "Custo Para Adulto";
+                break;
+
+            case 'valor_venda_adulto':
+                $field = "Venda Para Adulto";
+                break;
+
+
+
+            case 'valor_custo_crianca':
+                $field = "Custo Para Criança";
+                break;
+
+            case 'valor_venda_crianca':
+                $field = "Venda Para Criança";
+                break;
+
+            case 'desconto_adulto':
+                $field = "Desconto para Adultos";
+                break;
+
+
+            case 'desconto_crianca':
+                $field = "Desconto para Crianças";
+                break;
+
+
+
+
+            case 'oq_n_inclui':
+                $field = "Não Incluso";
+                break;
+            case 'valor_total':
+                $field = "Valor do Pedido";
+                break;
+            case 'dia_ida':
+                $field = "Data do Tour";
+                break;
+            case 'dia_volta':
+                $field = "Data da Volta";
+                break;
+
+            case 'data_pedido':
+                $field = "Data do Pedido";
+                break;
+
+            case 'data_passeio':
+                $field = "Data do Passeio / Marcada";
+                break;
+
+            case 'id_passeio':
+                $field = "Passeio";
+                break;
+
+
+            case 'image':
+                $field = "Foto";
+                break;
+
+
+
+            case 'image1':
+                $field = "Foto 1";
+                break;
+
+
+
+            case 'image2':
+                $field = "Foto 2";
+                break;
+
+
+
+            case 'image3':
+                $field = "Foto 3";
+                break;
+
+
+
+            case 'image4':
+                $field = "Foto 4";
+                break;
+
+
+
+            case 'image5':
+                $field = "Foto 5";
+                break;
+
+
+
+            case 'disponibilidade':
+                $field = "Pacote Disponível ou Agêndamento";
+                break;
+
+            case 'dias':
+                $field = "Dias Escolhidos - Passeio";
+                break;
+
+            case 'custos_extras':
+                $field = "Custos / Despesas Extras";
+                break;
+
+            case 'valor':
+                $field = "Custos Total";
+                break;
+
+            case 'nome':
+                $field = "Nome";
+                break;
+            case 'email':
+                $field = "E-mail";
+                break;
+            case 'user':
+                $field = "Usuario";
+                break;
+            case 'cpf_passaporte':
+                $field = "CPF ou Passaporte";
+                break;
+
+
+            case 'rua':
+                $field = "Logradouro";
+                break;
+
+            case 'rg':
+                $field = "Numero da Identidade";
+                break;
+
+            case 'rg_frente':
+                $field = "Foto Documento Frente";
+                break;
+            case 'rg_tras':
+                $field = "Foto Documento Verso";
+                break;
+
+            case 'pass':
+                $field = "Senha";
+                break;
+
+            case 'meta_title':
+                $field = "Titulo (META DESCRIÇÃO)";
+                break;
+
+            case 'observacao':
+                $field = "Observação";
+                break;
+
+            case 'data_inicio':
+                $field = "Data Inicial";
+                break;
+
+            case 'data_fim':
+                $field = "Data Final";
+                break;
+
+            case 'lance_inicial':
+                $field = "Valor Inicial";
+                break;
+
+            case 'lance_minimo':
+                $field = "Valor Minimo para Finalizar";
+                break;
+
+            case 'comissao_leiloeiro':
+                $field = "Comissão do Leiloeiro";
+                break;
+
+
+            case 'descricao_completa':
+                $field = "Descrição do Lote";
+                break;
+
+            case 'titulo_extra1':
+                $field = "Titulo 1";
+                break;
+
+            case 'titulo_extra2':
+                $field = "Titulo 2";
+                break;
+
+            case 'titulo_extra3':
+                $field = "Titulo 3";
+                break;
+
+            case 'descricao_extra1':
+                $field = "Descrição 1";
+                break;
+
+            case 'descricao_extra2':
+                $field = "Descrição 2";
+                break;
+
+            case 'descricao_extra3':
+                $field = "Descrição 3";
+                break;
+
+            case 'url':
+                $field = "URL";
+                break;
+
+            case 'conteudo':
+                $field = "Conteúdo";
+                break;
+
+            case 'cpf':
+                $field = "CPF";
+                break;
+
+                case 'ultimo_acesso':
+                $field = "Último Acesso";
+                break;
+
+
+        }
+
+        return ucwords($field);
+    }
+    public function tabela_campos_filtro($response,$tabela,$campo,$valor,$outros_values){
+
+        if($response > 0):
+        $this->db->from(''.$tabela.'');
+        $this->db->where('id',$outros_values['id']);
+        $get = $this->db->get();
+        $response = $get->result_array();
+        endif;
+        if($campo == 'acoes'):
+            $valor = '';
+            if($response > 0):
+
+
+                $valor .= '<div style="float: left;width: 100%;margin-bottom: 8px!important;">';
+                $valor .= '<label>Situação: </label>&nbsp;&nbsp;&nbsp;';
+                $valor .= '<select class="form-control" style="">';
+
+            $valor .= '<option>Ativado</option>';
+
+            $valor .= '<option>Desativado</option>';
+
+                $valor .= '</select>';
+                $valor .= '</div>';
+                $valor .= '<div class="clearfix"></div>';
+                $valor .= '';
+
+            endif;
+            $valor .= '<a href="javascript:edit_item(\'modal\',\''.$tabela.'\','.$outros_values['id'].');" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a> &nbsp;&nbsp;&nbsp;';
+            $valor .= '<a href="javascript:deletar_item(\''.$tabela.'\','.$outros_values['id'].');" class="btn btn-danger"><i class="fas fa-trash"></i> Excluir</a>';
+        endif;
+
+        if($campo == 'image'):
+
+            $valor = '<img src="'.base_url('web/imagens/'.$valor).'" style="width:100px;">';
+
+        endif;
+        if($campo == 'data_pedido' or $campo == 'dia_ida'):
+            $date = new DateTime(''.$valor.'');
+            $valor = $date->format('d/m/Y');
+
+        endif;
+        if($campo == 'id_user'):
+            $this->db->from('clientes');
+            $this->db->where('id',$valor);
+            $get = $this->db->get();
+            $result = $get->result_array()[0];
+            $valor = $result['nome'];
+
+        endif;
+        if($campo == 'id_passeio'):
+            $this->db->from('passeios');
+            $this->db->where('id',$valor);
+            $get = $this->db->get();
+
+            $count = $get->num_rows();
+            if($count > 0):
+                $result = $get->result_array()[0];
+                $valor = $result['nome'];
+            else:
+                $valor = '<b>Não Encontrado</b>';
+            endif;
+
+        endif;
+
+
+        return $valor;
+    }
+    public function tabela_valor_filtro($fieldname,$fields){
+
+        if($fieldname == 'status'):
+
+            $fields = ($fields == 0) ? '<a class="btn"><i class="mdi mdi-check-circle"></i> Ativar</a>': '<a class="btn"><i class="mdi mdi-close-box"></i> Desativar</a>';
+
+        endif;
+
+        return $fields;
+    }
+    public function campos_filtro($id,$fields,$tabela){
+
+        if($id > 0):
+            $this->db->from($tabela);
+            $this->db->where('id',$id);
+            $get = $this->db->get();
+            $result = $get->result_array()[0];
+            $value = 'value="'.$result[''.$fields.''].'"';
+            $valuetxt = $result[''.$fields.''];
+
+        else:
+
+            $value = '';
+            $valuetxt = '';
+        endif;
+
+
+        if($fields == 'pass'):
+            $value = '';
+            $valuetxt = '';
+        endif;
+
+        $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <input type="text" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+                    </div>';
+
+        if($fields == 'dias'):
+            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <input type="number" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+                    </div>';
+        endif;
+
+        if($fields == 'dia_ida' or $fields == 'dia_volta' or $fields == 'data_pedido'):
+            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <input type="date" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+                    </div>';
+        endif;
+
+        if($fields == 'image' or $fields == 'image1' or $fields == 'image2' or $fields == 'image3' or $fields == 'image4' or $fields == 'image5'):
+
+            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <input type="file" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'">
+                    </div>';
+        endif;
+        if($fields == 'descricao'):
+
+            $tfields = '<div class="form-group" style="float: left;width: 100%;padding: 0 20px 0 20px;">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <textarea name="'.$fields.'">'.$valuetxt.'</textarea>
+                    </div>';
+
+        endif;
+
+        if($fields == 'email'):
+
+            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                        <input type="email" class="form-control" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+                    </div>';
+
+        endif;
+        if($fields == 'status'):
+
+            if($id > 0):
+                if($result[$fields] == 1):
+
+                    $options = '<option selected>Ativo</option>';
+                    $options .= '<option>Desativado</option>';
+                else:
+                    $options = '<option>Ativo</option>';
+                    $options .= '<option selected>Desativado</option>';
+
+                endif;
+
+            else:
+
+                $options = '<option selected>Ativo</option>';
+                $options .= '<option>Desativado</option>';
+            endif;
+
+            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                  
+                  <select class="form-control" name="'.$fields.'" id="'.$fields.'">
+                  '.$options.'
+                  </select>
+                  
+                  
+                    </div>';
+
+
+
+        endif;
+
+
+        if($fields == 'id_user' or $fields == 'id_passeio'):
+            $options = '<option>Selecione uma Opção</option>';
+
+
+
+            if(isset($_GET['edit'])):
+
+
+                if($fields == 'id_user'):
+                    $this->db->from('clientes');
+                endif;
+                if($fields == 'id_passeio'):
+                    $this->db->from('passeios');
+                endif;
+                $get = $this->db->get();
+                $users = $get->result_array();
+
+                foreach ($users as $val){
+
+                    if($val['id'] == $valuetxt):
+                        $options .= '<option value="'.$val['id'].'" selected="selected">'.$val['nome'].'</option>';
+
+                    else:
+                        $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
+
+                    endif;
+
+                }
+
+            else:
+
+
+
+                if($fields == 'id_user'):
+                    $this->db->from('clientes');
+                endif;
+                if($fields == 'id_passeio'):
+                    $this->db->from('passeios');
+                endif;
+                $get = $this->db->get();
+                $users = $get->result_array();
+
+                foreach ($users as $val){
+                    $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
+
+                }
+
+            endif;
+
+            $tfields = '<div class="form-group" style="float: left;width: 30%;margin-left: 20px">
+                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+                  
+                  <select class="js-example-basic-single form-control" name="'.$fields.'" id="'.$fields.'">
+                  '.$options.'
+                  </select>
+                  
+                  
+                    </div>';
+
+
+
+        endif;
+
+        return $tfields;
+    }
+
+
+
+
+
+
+}
