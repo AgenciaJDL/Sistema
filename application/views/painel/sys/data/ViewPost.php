@@ -94,19 +94,6 @@
         });
     } );
 
-    $(document).ready(function() {
-        var table = $('.table').DataTable();
-
-        $('.table tbody').on( 'click', 'tr', function () {
-
-        } );
-
-        $('#deleteintens').click( function () {
-
-        } );
-    } );
-
-
 
     function deletetudo() {
         var txt;
@@ -124,10 +111,6 @@
 
 
     }
-
-</script>
-
-<script>
 
     var editor = new FroalaEditor('#froala-editor')
 
