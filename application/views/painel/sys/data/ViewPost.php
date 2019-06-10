@@ -70,6 +70,7 @@
                             <span aria-hidden="true" style="font-size: 15px;">&times;</span>
                         </button>
                     </div>
+
                     <div class="modal-body">
                         <p style="float: left;width: 100%;text-align: center!important;padding-left:35%;"><img src="https://media1.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" style="width: 200px;float: left;"></p>
                     </div>
@@ -77,7 +78,7 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('.modal .modal-body').html('<h4>Carregando...</h4>');">Fechar</button>
-                        <button type="button" class="btn btn-primary">Salvar mudanças</button>
+                        <button type="button" class="btn btn-primary" onclick="saveForm(<?php echo $post['campo'];?>);">Salvar mudanças</button>
                     </div>
                 </div>
             </div>
@@ -97,18 +98,33 @@
         var table = $('.table').DataTable();
 
         $('.table tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
+
         } );
 
-        $('#button').click( function () {
-
-            $.each( $( ".selected" ), function() {
-
-                //Aqui Envia Itens a Serem Deletados
-            });
+        $('#deleteintens').click( function () {
 
         } );
     } );
+
+
+
+    function deletetudo() {
+        var txt;
+        var r = confirm("Tem Certeza que deseja deletar os itens?");
+        if (r == true) {
+            $.each( $( ".selected" ), function() {
+
+                //Aqui Envia Itens a Serem Deletados
+
+                delecsts('<?php echo $post['campo'];?>',this.id,1);
+            });
+        } else {
+
+        }
+
+
+    }
+
 </script>
 
 <script>

@@ -13,17 +13,145 @@ class Ajax extends CI_Controller
     }
 
 
+    public function changestatus(){
+        if ($this->Model->session_admin() == true):
+
+            $arr['status'] = $_POST['status'];
+            $this->db->where('id',$_POST['item']);
+            $this->db->update($_POST['table'],$arr);
+
+            echo 11;
+        endif;
+
+        }
+
+    public function deleteitens(){
+        if ($this->Model->session_admin() == true):
+
+            $this->db->from('menu_admin');
+            $this->db->where('id',$_POST['table']);
+            $get = $this->db->get();
+            $menu_admin = $get->result_array()[0];
+
+
+            $this->db->where('id',$_POST['item']);
+            $this->db->delete($menu_admin['tabela']);
+
+            echo 11;
+
+        endif;
+
+        }
+
+    public function ProcessarForm(){
+        if ($this->Model->session_admin() == true):
+
+
+
+            $_POST = $this->Model->tratar_campos($_POST);
+
+        $this->db->from('menu_admin');
+        $this->db->where('id',$_POST['tabelaid']);
+        $get = $this->db->get();
+        $menu_admin = $get->result_array()[0];
+        unset($_POST['tabelaid']);
+
+
+        if(isset($_POST['edit'])):
+
+            $editid = $_POST['iditem'];
+            unset($_POST['iditem']);
+
+            $this->db->from($menu_admin['tabela']);
+            $this->db->where('id',$editid);
+            $get = $this->db->get();
+            $backuptable = $get->result_array()[0];
+
+            $backup['data_alterada'] = date('d/m/Y H:i:s');
+            $backup['id_admin'] = $_SESSION['ID_ADMIN'];
+            $backup['ip_alteracao'] = $_SERVER['REMOTE_ADDR'];
+
+
+            $explodedata = explode('',$menu_admin['tb']);
+
+            $databackup = '';
+            for($n=0;$n<count($explodedata);$n++):
+
+                $databackup .= '<<< <b>'.$explodedata[$n].': </b>'.$backuptable[$explodedata[$n]].' >>>,';
+
+            endfor;
+            $backup['sql_dump'] = $databackup;
+
+            $this->db->insert('beforedata',$backup);
+            $lastinsertbackup = $this->db->insert_id();
+
+            $this->db->where('id',$editid);
+            $this->db->update($menu_admin['tabela'],$_POST);
+
+            $log['acao'] = 'Alterado dado com <b>ID '.$editid.'</b> na <b>tabela '.$menu_admin['tabela'].'</b>';
+            $log['tipo_acao'] = 2;
+            $log['beforedata'] = $lastinsertbackup;
+            $log['id_admin'] = $_SESSION['ID_ADMIN'];
+            $log['ip'] = $_SERVER['REMOTE_ADDR'];
+            $log['data_up_admin'] = $_SESSION['ID_ADMIN'];
+            $this->db->insert('log_admin',$log);
+
+            echo 11;
+        else:
+
+        $this->db->insert($menu_admin['tabela'],$_POST);
+        $lastinsert = $this->db->insert_id();
+
+
+            $log['acao'] = 'Adicionado dado com <b>ID '.$lastinsert.'</b> na <b>tabela '.$menu_admin['tabela'].'</b>';
+            $log['tipo_acao'] = 2;
+            $log['id_admin'] = $_SESSION['ID_ADMIN'];
+            $log['ip'] = $_SERVER['REMOTE_ADDR'];
+            $log['data_up_admin'] = $_SESSION['ID_ADMIN'];
+            $this->db->insert('log_admin',$log);
+
+            echo 11;
+        endif;
+
+
+
+endif;
+
+    }
+
     public function formFilds(){
+
+        if ($this->Model->session_admin() == true):
+
         $return = '';
 
         $this->db->from('menu_admin');
         $this->db->where('id',$_POST['tabela']);
         $get = $this->db->get();
+
+        $count = $get->num_rows();
+        if(isset($_POST['edit'])):
+
+            $class = 'form_'.$_POST['edit'];
+
+        else:
+
+            $class = 'form_';
+
+        endif;
+
+        if($count > 0):
+
+
         $menu = $get->result_array()[0];
 
         $campoexplode = explode(',',$menu['tb']);
 
-
+            $return .= '<form method="post" action="javascript:saveForm();" id="'.$class.'">';
+if(isset($_POST['edit'])):
+            $return .= '<input type="hidden" name="iditem" value="'.$_POST['edit'].'">';
+endif;
+            $return .= '<input type="hidden" name="tabelaid" value="'.$_POST['tabela'].'">';
         for($i=0;$i<count($campoexplode);$i++):
 
 if($campoexplode[$i] == 'nome' and $_POST['tabela'] == '30' or $campoexplode[$i] == 'nome' and $_POST['tabela'] == '31'):
@@ -40,14 +168,22 @@ endif;
                 $return .= $this->Model->TitleReplace($campoexplode[$i]);
                 else:
 
-                    $return .= $this->Model->campos_filtro(0,$campoexplode[$i],$_POST['tabela'],$campowidth
-                    );
+
+                    if(isset($_POST['edit'])):
+                        $return .= $this->Model->campos_filtro($_POST['edit'],$campoexplode[$i],$_POST['tabela'],$campowidth);
+
+                    else:
+                        $return .= $this->Model->campos_filtro(0,$campoexplode[$i],$_POST['tabela'],$campowidth);
+
+                    endif;
 
             endif;
 
 
         endfor;
 
+
+            $return .= '</form>';
         echo ' <script>
     var editor = new FroalaEditor(\'#froala-editor\'); 
     
@@ -56,8 +192,10 @@ endif;
 });    
   </script>';
 
-        echo $return;
 
+        endif;
+        echo $return;
+endif;
     }
 
     public function NavegacaoView(){

@@ -44,6 +44,9 @@
         .select2-container--open {
             z-index: 9999999!important;
         }
+        .disabled{
+            cursor: not-allowed!important;
+        }
     </style>
 
 </head>

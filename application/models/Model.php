@@ -12,6 +12,16 @@ class Model extends CI_Model
         @session_start();
     }
 
+    public function tratar_campos($post){
+
+        if(isset($post['pass'])):
+            $post['pass'] = md5($post['pass']);
+        endif;
+
+
+        return $post;
+    }
+
     public function newbuttomtable($post){
 
         $return = '';
@@ -50,6 +60,10 @@ class Model extends CI_Model
         endif;
 
 
+
+            $return .= ' <a href="javascript:deletetudo();" class="btn btn-danger removeallselects disabled"><i class="fa fa-trash"></i> DELETAR SELECIONADOS</a>';
+
+
             $return .= '<div class="clearfixs"></div>';
             $return .= '<br>';
 
@@ -59,6 +73,8 @@ class Model extends CI_Model
         return $return;
 
     }
+
+
 
     public function recupera_fields($arr,$id){
 
@@ -91,9 +107,10 @@ class Model extends CI_Model
         $get = $this->db->get();
         $menu_admin = $get->result_array();
 
-        if(!empty($menu_admin[0]['condicao'])):
         $explodeCond1 = explode('(//)',$menu_admin[0]['condicao']);
         $this->db->from(''.$menu_admin[0]['tabela'].'');
+        if(!empty($menu_admin[0]['condicao'])):
+
         for($i=0;$i<count($explodeCond1);$i++):
             $explodeCond2 = explode(',',$explodeCond1[$i]);
             $this->db->where($explodeCond2[0],$explodeCond2[1]);
@@ -134,7 +151,14 @@ class Model extends CI_Model
 
             endif;
 
-            $return .= '<td '.$styletd.'>'.$this->tabela_campos_filtro($menu_admin[0]['response'],$table,trim($forExplode[$i]),$value[trim($forExplode[$i])],$value).'</td>';
+            if($i == 0):
+                $return .= '<td '.$styletd.' onclick="addSelect('.$value['id'].');">'.$this->tabela_campos_filtro($menu_admin[0]['response'],$arr['campo'],trim($forExplode[$i]),$value[trim($forExplode[$i])],$value).'</td>';
+
+            else:
+                $return .= '<td '.$styletd.'>'.$this->tabela_campos_filtro($menu_admin[0]['response'],$arr['campo'],trim($forExplode[$i]),$value[trim($forExplode[$i])],$value).'</td>';
+
+            endif;
+
         endfor;
         $return .= '</tr>';
         return $return;
@@ -795,8 +819,13 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
     }
     public function tabela_campos_filtro($response,$tabela,$campo,$valor,$outros_values){
 
+        $this->db->from('menu_admin');
+        $this->db->where('id',$tabela);
+        $get = $this->db->get();
+        $menu_admin = $get->result_array()[0];
+
         if($response > 0):
-        $this->db->from(''.$tabela.'');
+        $this->db->from(''.$menu_admin['tabela'].'');
         $this->db->where('id',$outros_values['id']);
         $get = $this->db->get();
         $response = $get->result_array();
@@ -808,11 +837,20 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
                 $valor .= '<div style="float: left;width: 100%;margin-bottom: 8px!important;">';
                 $valor .= '<label>Situação: </label>&nbsp;&nbsp;&nbsp;';
-                $valor .= '<select class="form-control" style="">';
+                $valor .= '<select class="form-control" onchange="chagestatus(this,'.$outros_values['id'].',\''.$menu_admin['tabela'].'\');">';
 
-            $valor .= '<option>Ativado</option>';
+                if($response[0]['status'] == 1):
+                    $valor .= '<option value="1">Ativado</option>';
+                    $valor .= '<option value="0">Desativado</option>';
+                    else:
 
-            $valor .= '<option>Desativado</option>';
+                        $valor .= '<option value="0">Desativado</option>';
+                        $valor .= '<option value="1">Ativado</option>';
+
+                endif;
+
+
+
 
                 $valor .= '</select>';
                 $valor .= '</div>';
@@ -820,8 +858,8 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 $valor .= '';
 
             endif;
-            $valor .= '<a href="javascript:edit_item(\'modal\',\''.$tabela.'\','.$outros_values['id'].');" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a> &nbsp;&nbsp;&nbsp;';
-            $valor .= '<a href="javascript:deletar_item(\''.$tabela.'\','.$outros_values['id'].');" class="btn btn-danger"><i class="fas fa-trash"></i> Excluir</a>';
+            $valor .= '<a href="javascript:editar_item(\'modal\',\''.$tabela.'\','.$outros_values['id'].');" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a> &nbsp;&nbsp;&nbsp;';
+            $valor .= '<a href="javascript:delecsts(\''.$tabela.'\','.$outros_values['id'].',0);" class="btn btn-danger"><i class="fas fa-trash"></i> Excluir</a>';
         endif;
 
         if($campo == 'image'):
@@ -873,7 +911,16 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
     public function campos_filtro($id,$fields,$tabela,$wid){
 
         if($id > 0):
-            $this->db->from($tabela);
+
+
+
+            $this->db->from('menu_admin');
+            $this->db->where('id',$tabela);
+            $get = $this->db->get();
+            $menu_adm = $get->result_array()[0];
+
+
+            $this->db->from($menu_adm['tabela']);
             $this->db->where('id',$id);
             $get = $this->db->get();
             $result = $get->result_array()[0];
@@ -900,7 +947,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         if($fields == 'pass'):
             $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
                         <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="password" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+                        <input type="password" autocomplete="off" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.' >
                     </div>';
         endif;
 
@@ -1000,7 +1047,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 foreach ($users as $val){
 
                     if($val['id'] == $valuetxt):
-                        $options .= '<option value="'.$val['id'].'" selected="selected">'.$val['nome'].'</option>';
+                        $options .= '<option value="'.$val['id'].'" selected>'.$val['nome'].'</option>';
 
                     else:
                         $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
@@ -1026,7 +1073,14 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 $users = $get->result_array();
 
                 foreach ($users as $val){
-                    $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
+
+                    if($val['id'] == $valuetxt):
+                        $options .= '<option value="'.$val['id'].'" selected>'.$val['nome'].'</option>';
+
+                    else:
+                        $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
+
+                    endif;
 
                 }
 

@@ -167,7 +167,7 @@
         alert('ok');
     }
     
-    function newPostTable(acao,tabela,tipo) {
+    function newPostTable(acao,tabela,tipo,edit) {
 
         if(tipo){
             $('.modal').modal({backdrop: 'static', keyboard: false});
@@ -207,41 +207,225 @@
 
             $('.modal').modal({backdrop: 'static', keyboard: false});
 
-            $.ajax({
-                url: DIR+'Ajax/formFilds',
-                data: {acao:acao,tabela:tabela},
-                type: 'POST',
+            if(edit){
+                $.ajax({
+                    url: DIR+'Ajax/formFilds',
+                    data: {acao:acao,tabela:tabela,edit:edit},
+                    type: 'POST',
 
-                error: function (res) {
+                    error: function (res) {
 
-                    alert('Erro ao Carregar o Conteudo');
+                        alert('Erro ao Carregar o Conteudo');
 
-                },
-                success: function (data) {
+                    },
+                    success: function (data) {
 
-                    if(data){
+                        if(data){
 
-                        if(data == 'reload_action'){
-                            window.location.reload();
+                            if(data == 'reload_action'){
+                                window.location.reload();
+                            }else{
+                                $('.modal .modal-body').html(data);
+                            }
+
                         }else{
-                            $('.modal .modal-body').html(data);
+
+                            alert('Erro ao Carregar e Exibir o Conteudo');
+
                         }
 
-                    }else{
 
-                        alert('Erro ao Carregar e Exibir o Conteudo');
 
                     }
+                });
+            }else{
+                $.ajax({
+                    url: DIR+'Ajax/formFilds',
+                    data: {acao:acao,tabela:tabela},
+                    type: 'POST',
+
+                    error: function (res) {
+
+                        alert('Erro ao Carregar o Conteudo');
+
+                    },
+                    success: function (data) {
+
+                        if(data){
+
+                            if(data == 'reload_action'){
+                                window.location.reload();
+                            }else{
+                                $('.modal .modal-body').html(data);
+                            }
+
+                        }else{
+
+                            alert('Erro ao Carregar e Exibir o Conteudo');
+
+                        }
 
 
 
-                }
-            });
+                    }
+                });
+            }
+
 
         }
         
     }
-    
+
+
+    function editar_item(action,tabela,id) {
+        newPostTable(1,tabela,'',id);
+    }
+
+     function saveForm(table) {
+
+        var form = $('form').serialize();
+
+        $.ajax({
+            url: DIR+'Ajax/ProcessarForm',
+            data: form,
+            type: 'POST',
+
+            error: function (res) {
+
+                alert('Erro ao Carregar o Conteudo');
+
+            },
+            success: function (data) {
+
+                if(data){
+
+if(data == 11){
+    $('.modal').modal('hide');
+    view(1,table);
+}else{
+    alert(data);
+
+}
+
+                }else{
+
+                    alert('Erro ao Carregar e Exibir o Conteudo');
+
+                }
+
+
+
+            }
+        });
+    }
+
+    function addSelect(edit) {
+
+        if($('#'+edit).hasClass('selected')){
+
+            $('#'+edit).removeClass('selected');
+
+
+        }else{
+
+            $('#'+edit).addClass('selected');
+            $('.removeallselects').removeClass('disabled');
+
+        }
+
+    }
+
+    function delecsts(table,item,multiple) {
+
+        $.ajax({
+            url: DIR+'Ajax/deleteitens',
+            data: {table:table,item:item},
+            type: 'POST',
+
+            error: function (res) {
+
+                alert('Erro ao Carregar o Conteudo');
+
+            },
+            success: function (data) {
+
+                if(data){
+
+                    var tables = $('#demo-dt-addrow').DataTable();
+
+
+                    if(data == 11){
+                        if(multiple == 1){
+
+
+                            tables.row('.selected').remove().draw( false );
+
+
+                        }else{
+                            view(1,table);
+
+                        }
+                    }else{
+                        alert(data);
+
+                    }
+
+                }else{
+
+                    alert('Erro ao Carregar e Exibir o Conteudo');
+
+                }
+
+
+
+            }
+        });
+    }
+
+
+    function chagestatus(arrdata,id,table) {
+
+        var status = arrdata.value;
+        $.ajax({
+            url: DIR+'Ajax/changestatus',
+            data: {table:table,item:id,status:status},
+            type: 'POST',
+
+            error: function (res) {
+
+                alert('Erro ao Carregar o Conteudo');
+
+            },
+            success: function (data) {
+
+                if(data){
+
+                    var tables = $('#demo-dt-addrow').DataTable();
+
+
+                    if(data == 11){
+
+                    }else{
+                        alert(data);
+
+                    }
+
+                }else{
+
+                    alert('Erro ao Carregar e Exibir o Conteudo');
+
+                }
+
+
+
+            }
+        });
+
+
+
+    }
+
+
 </script>
 </body>
 
