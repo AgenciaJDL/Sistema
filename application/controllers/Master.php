@@ -25,8 +25,18 @@ class Master extends CI_Controller {
 
 
 
+
             $this->db->from('menu_admin_categorias');
             $this->db->where('status',1);
+
+            if($administrativo['permissoes'] <> 1):
+                $this->db->where('tipo_acesso',$administrativo['permissoes']);
+                $this->db->or_where('tipo_acesso>',$administrativo['permissoes']);
+                $this->db->where('status',1);
+                $this->db->or_where('tipo_acesso','all');
+                $this->db->where('status',1);
+
+            endif;
             $this->db->order_by('ordem','desc');
             $get = $this->db->get();
             $menu_admin_categoria = $get->result_array();

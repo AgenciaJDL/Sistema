@@ -12,9 +12,10 @@ class Model extends CI_Model
         @session_start();
     }
 
-    public function tratar_campos($post){
+    public function tratar_campos($post)
+    {
 
-        if(isset($post['pass'])):
+        if (isset($post['pass'])):
             $post['pass'] = md5($post['pass']);
         endif;
 
@@ -22,43 +23,41 @@ class Model extends CI_Model
         return $post;
     }
 
-    public function newbuttomtable($post){
+    public function newbuttomtable($post)
+    {
 
         $return = '';
 
         $this->db->from('menu_admin');
-        $this->db->where('id',$post['campo']);
+        $this->db->where('id', $post['campo']);
         $get = $this->db->get();
         $count = $get->num_rows();
 
-        if($count > 0):
+        if ($count > 0):
             $result = $get->result_array()[0];
 
 
-        if(!empty($result['condicao'])):
+            if (!empty($result['condicao'])):
 
-            $explode = explode(',',$result['condicao']);
-
-
-        if(!empty($explode[0]) and !empty($explode[1]) and $explode[0] == 'tipo'):
-
-            $return = ' <a href="javascript:newPostTable(1,'.$post['campo'].','.$explode[1].');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
-
-        else:
-
-            $return = ' <a href="javascript:newPostTable(1,'.$post['campo'].');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
-
-        endif;
+                $explode = explode(',', $result['condicao']);
 
 
+                if (!empty($explode[0]) and !empty($explode[1]) and $explode[0] == 'tipo'):
+
+                    $return = ' <a href="javascript:newPostTable(1,' . $post['campo'] . ',' . $explode[1] . ');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
+
+                else:
+
+                    $return = ' <a href="javascript:newPostTable(1,' . $post['campo'] . ');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
+
+                endif;
 
 
-        else:
+            else:
 
-     $return = ' <a href="javascript:newPostTable(1,'.$post['campo'].');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
+                $return = ' <a href="javascript:newPostTable(1,' . $post['campo'] . ');" class="btn btn-primary"><i class="fa fa-plus"></i> NOVO</a>';
 
-        endif;
-
+            endif;
 
 
             $return .= ' <a href="javascript:deletetudo();" class="btn btn-danger removeallselects disabled"><i class="fa fa-trash"></i> DELETAR SELECIONADOS</a>';
@@ -68,25 +67,25 @@ class Model extends CI_Model
             $return .= '<br>';
 
 
-       endif;
+        endif;
 
         return $return;
 
     }
 
 
+    public function recupera_fields($arr, $id)
+    {
 
-    public function recupera_fields($arr,$id){
 
-
-        $this->db->select(''.$arr['sel'].'');
-        $this->db->from(''.$arr['t1'].'');
-        $this->db->where('id',$id);
+        $this->db->select('' . $arr['sel'] . '');
+        $this->db->from('' . $arr['t1'] . '');
+        $this->db->where('id', $id);
         $get = $this->db->get();
         $menu_admin = $get->result_array()[0];
 
-        $this->db->from(''.$arr['t2'].'');
-        $this->db->where('id',$menu_admin[$arr['sel']]);
+        $this->db->from('' . $arr['t2'] . '');
+        $this->db->where('id', $menu_admin[$arr['sel']]);
         $get = $this->db->get();
         $result = $get->result_array();
 
@@ -98,64 +97,81 @@ class Model extends CI_Model
 
     //Inicio Tables Admin Funções
 
-    public function rowstbodyViewAdmin($arr){
+    public function rowstbodyViewAdmin($arr)
+    {
+
+        $this->db->from('administrador');
+        $this->db->where('status', 1);
+        $this->db->where('id', $_SESSION['ID_ADMIN']);
+        $get = $this->db->get();
+        $administrador = $get->result_array()[0];
 
         $this->db->select('tabela,condicao,th');
         $this->db->from('menu_admin');
-        $this->db->where('status',1);
-        $this->db->where('id',$arr['campo']);
+        $this->db->where('status', 1);
+        $this->db->where('id', $arr['campo']);
         $get = $this->db->get();
         $menu_admin = $get->result_array();
 
-        $explodeCond1 = explode('(//)',$menu_admin[0]['condicao']);
-        $this->db->from(''.$menu_admin[0]['tabela'].'');
-        if(!empty($menu_admin[0]['condicao'])):
+        $explodeCond1 = explode('(//)', $menu_admin[0]['condicao']);
+        $this->db->from('' . $menu_admin[0]['tabela'] . '');
 
-        for($i=0;$i<count($explodeCond1);$i++):
-            $explodeCond2 = explode(',',$explodeCond1[$i]);
-            $this->db->where($explodeCond2[0],$explodeCond2[1]);
-        endfor;
+        if (!empty($menu_admin[0]['condicao'])):
+            for ($i = 0; $i < count($explodeCond1); $i++):
+                $explodeCond2 = explode(',', $explodeCond1[$i]);
+                $this->db->where($explodeCond2[0], $explodeCond2[1]);
+            endfor;
         endif;
 
 
-        $this->db->order_by('id','desc');
+        $this->db->order_by('id', 'desc');
         $get = $this->db->get();
         $count = $get->num_rows();
-        if($count > 0):
+        if ($count > 0):
             $result = $get->result_array();
 
-        foreach ($result as $value) {
-            echo $this->tbodyViewAdmin($menu_admin[0]['tabela'],$arr, $value);
-        }
-       endif;
+            foreach ($result as $value) {
+
+                if ($arr['campo'] == 2):
+
+                    if ($value['permissoes'] >= $administrador['permissoes']):
+                        echo $this->tbodyViewAdmin($menu_admin[0]['tabela'], $arr, $value);
+                    endif;
+                else:
+                    echo $this->tbodyViewAdmin($menu_admin[0]['tabela'], $arr, $value);
+
+                endif;
+            }
+        endif;
     }
 
-    public function tbodyViewAdmin($table,$arr,$value){
+    public function tbodyViewAdmin($table, $arr, $value)
+    {
         $return = '';
         $this->db->select('th,response');
         $this->db->from('menu_admin');
-        $this->db->where('status',1);
-        $this->db->where('id',$arr['campo']);
+        $this->db->where('status', 1);
+        $this->db->where('id', $arr['campo']);
         $get = $this->db->get();
         $menu_admin = $get->result_array();
-        $forExplode = explode(',',$menu_admin[0]['th']);
-        $return .= '<tr id="'.$value['id'].'" lang="dsa">';
-        for($i=0;$i<count($forExplode);$i++):
-            if(trim($forExplode[$i]) == 'acoes'):
+        $forExplode = explode(',', $menu_admin[0]['th']);
+        $return .= '<tr id="' . $value['id'] . '" lang="dsa">';
+        for ($i = 0; $i < count($forExplode); $i++):
+            if (trim($forExplode[$i]) == 'acoes'):
 
                 $styletd = 'style="text-align:center!important;"';
 
-                else:
+            else:
 
                 $styletd = '';
 
             endif;
 
-            if($i == 0):
-                $return .= '<td '.$styletd.' onclick="addSelect('.$value['id'].');">'.$this->tabela_campos_filtro($menu_admin[0]['response'],$arr['campo'],trim($forExplode[$i]),$value[trim($forExplode[$i])],$value).'</td>';
+            if ($i == 0):
+                $return .= '<td ' . $styletd . ' onclick="addSelect(' . $value['id'] . ');">' . $this->tabela_campos_filtro($menu_admin[0]['response'], $arr['campo'], trim($forExplode[$i]), $value[trim($forExplode[$i])], $value) . '</td>';
 
             else:
-                $return .= '<td '.$styletd.'>'.$this->tabela_campos_filtro($menu_admin[0]['response'],$arr['campo'],trim($forExplode[$i]),$value[trim($forExplode[$i])],$value).'</td>';
+                $return .= '<td ' . $styletd . '>' . $this->tabela_campos_filtro($menu_admin[0]['response'], $arr['campo'], trim($forExplode[$i]), $value[trim($forExplode[$i])], $value) . '</td>';
 
             endif;
 
@@ -165,18 +181,19 @@ class Model extends CI_Model
     }
 
 
-    public function theadViewAdmin($arr){
+    public function theadViewAdmin($arr)
+    {
         $return = '';
         $this->db->select('th');
         $this->db->from('menu_admin');
-        $this->db->where('status',1);
-        $this->db->where('id',$arr['campo']);
+        $this->db->where('status', 1);
+        $this->db->where('id', $arr['campo']);
         $get = $this->db->get();
         $menu_admin = $get->result_array();
-        $forExplode = explode(',',$menu_admin[0]['th']);
+        $forExplode = explode(',', $menu_admin[0]['th']);
         $return .= '<tr>';
-        for($i=0;$i<count($forExplode);$i++):
-            $return .= '<th style="text-align: center;">'.$this->tabela_filtro(trim($forExplode[$i])).'</th>';
+        for ($i = 0; $i < count($forExplode); $i++):
+            $return .= '<th style="text-align: center;">' . $this->tabela_filtro(trim($forExplode[$i])) . '</th>';
         endfor;
         $return .= '</tr>';
         return $return;
@@ -185,14 +202,16 @@ class Model extends CI_Model
     //Fim Tables Admin Funções
 
 
-    public function frases_motivacionais(){
+    public function frases_motivacionais()
+    {
         return 'As pessoas costumam dizer que a motivação não dura sempre. Bem, nem o efeito do banho, por isso recomenda-se diariamente.';
     }
 
 
-    public function notificacoes(){
+    public function notificacoes()
+    {
 
-$return = '<br><a class="media add-tooltip" style="text-align: center!important;padding: 10px;">Nenhuma Notificação a Exibir</a>';
+        $return = '<br><a class="media add-tooltip" style="text-align: center!important;padding: 10px;">Nenhuma Notificação a Exibir</a>';
         /*
         $return = ' <li>
                                             <a href="#" class="media add-tooltip" data-title="Used space : 95%" data-container="body" data-placement="bottom">
@@ -214,31 +233,34 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         return $return;
     }
 
-    public function usages($usage){
+    public function usages($usage)
+    {
         $return = '';
 
         $arr['usage'] = $usage;
 
-        $this->load->view('painel/sys/data/usages',$arr);
+        $this->load->view('painel/sys/data/usages', $arr);
 
         return $return;
 
     }
 
-    public function cols_sm($cols,$size){
+    public function cols_sm($cols, $size)
+    {
         $return = '';
 
         $arr['coluna'] = $cols;
         $arr['size'] = $size;
 
-        $this->load->view('painel/sys/data/charts',$arr);
+        $this->load->view('painel/sys/data/charts', $arr);
 
         return $return;
 
 
     }
-    public function charts($data,$view,$template,$arrs){
 
+    public function charts($data, $view, $template, $arrs)
+    {
 
 
         $return = '';
@@ -248,8 +270,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         $arr['sys'] = $arrs[0];
 
 
-        $this->load->view('painel/sys/data/'.$view,$arr);
-
+        $this->load->view('painel/sys/data/' . $view, $arr);
 
 
         return $return;
@@ -257,7 +278,8 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
     }
 
 
-    public function monitor_rodape(){
+    public function monitor_rodape()
+    {
 
 
         return '<div class="mainnav-widget">
@@ -296,139 +318,203 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
     }
 
 
-    public function porcentagem_compara_dias($area_de_atuacao,$tipo,$dec_primario,$dec_secundario){
+    public function porcentagem_compara_dias($area_de_atuacao, $tipo, $dec_primario, $dec_secundario)
+    {
 
 
         $return = 0;
 
-        if($area_de_atuacao == 'pedidos'):
+        if ($area_de_atuacao == 'pedidos'):
 
 
-                if($tipo == 'pedidos'):
+            if ($tipo == 'pedidos'):
 
 
-                    if($dec_secundario > $dec_primario):
+                if ($dec_secundario > $dec_primario):
 
-                        $return = 100;
+                    $return = 100;
 
-                        else:
+                else:
 
-                        $return = (100 - intval(((($dec_primario - $dec_secundario) / $dec_primario) * 100)));
-                    endif;
-                elseif($tipo == 'intencoes'):
-
-                    if($dec_secundario > $dec_primario):
-
-                        $return = 100;
-
-                    else:
-
-                        $return = (100 - intval(((($dec_primario - $dec_secundario) / $dec_primario) * 100)));
-                    endif;
+                    $return = (100 - intval(((($dec_primario - $dec_secundario) / $dec_primario) * 100)));
                 endif;
+            elseif ($tipo == 'intencoes'):
+
+                if ($dec_secundario > $dec_primario):
+
+                    $return = 100;
+
+                else:
+
+                    $return = (100 - intval(((($dec_primario - $dec_secundario) / $dec_primario) * 100)));
+                endif;
+            endif;
 
         endif;
 
         return $return;
 
     }
-    public function menu_admin($arr,$ordem){
+
+    public function menu_admin($arr, $ordem)
+    {
 
         $return = '';
 
-       if($arr['has_sub'] > 0):
-
-           $this->db->from('menu_admin');
-           $this->db->where('status_menu',1);
-           $this->db->where('status',1);
-           $this->db->where('sub_id',$arr['id']);
-           $this->db->order_by('ordem','desc');
-           $get = $this->db->get();
-
-           $menu_subs_count = $get->num_rows();
-
-           $menu_subs = $get->result_array();
-           $menu_sub_itens = '';
-           foreach ($menu_subs as $value){
-               if ($this->db->table_exists(''.$value['tabela'].'')):
-               $menu_sub_itens .= '<li ><a href="javascript:view(1,'.$value['id'].');">'.$value['nome'].'</a></li>';
-               else:
-                   $menu_sub_itens .= '<li ><a href="javascript:alerts(\'Table Não Encontrada no Banco de Dados\');">'.$value['nome'].'</a></li>';
-
-               endif;
-           }
+        $this->db->from('administrador');
+        $this->db->where('id', $_SESSION['ID_ADMIN']);
+        $get = $this->db->get();
+        $administrativo = $get->result_array()[0];
 
 
-           if($ordem == 0):
-               $class = 'class="active-sub"';
-           else:
-               $class = '';
-           endif;
+        if ($arr['has_sub'] > 0):
 
-           if($menu_subs_count > 0):
-               $arrow = '<i class="arrow"></i>';
-           else:
-               $arrow = '';
-           endif;
+            $this->db->from('menu_admin');
+            $this->db->where('id', $arr['id']);
+            $this->db->where('status', 1);
+            $get = $this->db->get();
+            $resultmen = $get->result_array();
 
-           $return = '<li '.$class.'>
+            $this->db->from('menu_admin');
+            $this->db->where('status_menu', 1);
+            $this->db->where('status', 1);
+            $this->db->where('sub_id', $arr['id']);
+            if ($administrativo['permissoes'] <> 1):
+                $this->db->where('tipo_painel>=', $administrativo['permissoes']);
+                $this->db->or_where('tipo_painel', 1);
+                $this->db->where('status_menu', 1);
+                $this->db->where('status', 1);
+                $this->db->where('sub_id', $arr['id']);
+            endif;
+
+            $this->db->order_by('ordem', 'desc');
+            $get = $this->db->get();
+
+            $menu_subs_count = $get->num_rows();
+
+            $menu_subs = $get->result_array();
+            $menu_sub_itens = '';
+            foreach ($menu_subs as $value) {
+                if ($this->db->table_exists('' . $value['tabela'] . '')):
+                    $menu_sub_itens .= '<li ><a href="javascript:view(1,' . $value['id'] . ');">' . $value['nome'] . '</a></li>';
+                else:
+                    $menu_sub_itens .= '<li ><a href="javascript:alerts(\'Table Não Encontrada no Banco de Dados\');">' . $value['nome'] . '</a></li>';
+
+                endif;
+            }
+
+
+            if ($ordem == 0):
+                $class = 'class="active-sub"';
+            else:
+                $class = '';
+            endif;
+
+            if ($menu_subs_count > 0):
+                $arrow = '<i class="arrow"></i>';
+            else:
+                $arrow = '';
+            endif;
+            if (!empty($resultmen[0]['tipo_painel'])):
+
+                $this->db->from('menu_admin');
+                $this->db->where('status_menu', 1);
+                $this->db->where('status', 1);
+                $this->db->where('sub_id', $arr['id']);
+                if ($administrativo['permissoes'] <> 1):
+                    $this->db->where('tipo_painel>=', $administrativo['permissoes']);
+                    $this->db->or_where('tipo_painel', 1);
+                    $this->db->where('status_menu', 1);
+                    $this->db->where('status', 1);
+                    $this->db->where('sub_id', $arr['id']);
+                endif;
+                $get = $this->db->get();
+                $countmtps = $get->num_rows();
+
+                if ($countmtps > 0):
+
+                    $return = '<li ' . $class . '>
                             <a href="javascript:void(0);">
                                 <i class="demo-pli-home"></i>
-                                <span class="menu-title">'.$arr['nome'].'</span>
-                                '.$arrow.'
+                                <span class="menu-title">' . $arr['nome'] . '</span>
+                                ' . $arrow . '
                             </a>
 
                             <ul class="collapse">
                                 
-                            '.$menu_sub_itens.'
+                            ' . $menu_sub_itens . '
 
                             </ul>
                         </li>';
 
+                endif;
 
+            endif;
         else:
 
-            if ($this->db->table_exists(''.$arr['tabela'].'')):
-            echo '<li ><a href="javascript:view(1,'.$arr['id'].');"> <i class="demo-pli-home"></i> '.$arr['nome'].'</a></li>';
-            else:
-            echo '<li ><a  href="javascript:alerts(\'Table Não Encontrada no Banco de Dados\');"> <i class="demo-pli-home"></i> '.$arr['nome'].'</a></li>';
+            $this->db->from('menu_admin');
+            $this->db->where('id', $arr['id']);
+            $this->db->where('status', 1);
+            $get = $this->db->get();
+            $resultmen = $get->result_array();
+
+            $this->db->from('menu_admin');
+            $this->db->where('id', $arr['id']);
+            $this->db->where('status', 1);
+            if ($administrativo['permissoes'] <> 1):
+                $this->db->where('tipo_painel>=', $administrativo['permissoes']);
+                $this->db->or_where('tipo_painel', 1);
+                $this->db->where('id', $arr['id']);
+                $this->db->where('status', 1);
+            endif;
+            $get = $this->db->get();
+            $countgetwhere = $get->num_rows();
+
+
+            if ($countgetwhere > 0 and !empty($resultmen[0]['tipo_painel'])):
+                if ($this->db->table_exists('' . $arr['tabela'] . '')):
+                    echo '<li ><a href="javascript:view(1,' . $arr['id'] . ');"> <i class="demo-pli-home"></i> ' . $arr['nome'] . '</a></li>';
+                else:
+                    echo '<li ><a  href="javascript:alerts(\'Table Não Encontrada no Banco de Dados\');"> <i class="demo-pli-home"></i> ' . $arr['nome'] . '</a></li>';
+                endif;
             endif;
         endif;
 
-            return $return;
+        return $return;
     }
 
-    public function session_admin(){
+    public function session_admin()
+    {
 
-        if(isset($_SESSION['ID_ADMIN']) and isset($_SESSION['USER_ADMIN']) and  isset($_SESSION['IP_ADMIN'])  and  isset($_SESSION['EMAIL_ADMIN']) and isset($_SESSION['PASS_ADMIN'])):
+        if (isset($_SESSION['ID_ADMIN']) and isset($_SESSION['USER_ADMIN']) and isset($_SESSION['IP_ADMIN']) and isset($_SESSION['EMAIL_ADMIN']) and isset($_SESSION['PASS_ADMIN'])):
 
 
             try {
-            $this->db->from('administrador');
-            $this->db->where('id',$_SESSION['ID_ADMIN']);
-            $this->db->where('user',$_SESSION['USER_ADMIN']);
-            $this->db->where('email',$_SESSION['EMAIL_ADMIN']);
-            $this->db->where('pass',$_SESSION['PASS_ADMIN']);
-            $get = $this->db->get();
-            $count = $get->num_rows();
+                $this->db->from('administrador');
+                $this->db->where('id', $_SESSION['ID_ADMIN']);
+                $this->db->where('user', $_SESSION['USER_ADMIN']);
+                $this->db->where('email', $_SESSION['EMAIL_ADMIN']);
+                $this->db->where('pass', $_SESSION['PASS_ADMIN']);
+                $get = $this->db->get();
+                $count = $get->num_rows();
 
-            if($count > 0):
+                if ($count > 0):
 
-                return true;
+                    return true;
 
-            else:
+                else:
 
-                unset($_SESSION['ID_ADMIN']);
-                unset($_SESSION['USER_ADMIN']);
-                unset($_SESSION['IP_ADMIN']);
-                unset($_SESSION['EMAIL_ADMIN']);
-                unset($_SESSION['PASS_ADMIN']);
+                    unset($_SESSION['ID_ADMIN']);
+                    unset($_SESSION['USER_ADMIN']);
+                    unset($_SESSION['IP_ADMIN']);
+                    unset($_SESSION['EMAIL_ADMIN']);
+                    unset($_SESSION['PASS_ADMIN']);
 
-                return false;
+                    return false;
 
-            endif;
+                endif;
 
-        } catch (Exception $e) {
+            } catch (Exception $e) {
                 return false;
             }
 
@@ -440,17 +526,18 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
     }
 
-    public function TitleSearch($field){
+    public function TitleSearch($field)
+    {
 
         $varReturn = false;
         switch ($field) {
             case '|admin_credentials|':
                 $varReturn = true;
                 break;
-                case '|PAGINA_TITLE|':
+            case '|PAGINA_TITLE|':
                 $varReturn = true;
                 break;
-                case '|permissao_admin|':
+            case '|permissao_admin|':
                 $varReturn = true;
                 break;
             case '|admin_title|':
@@ -459,11 +546,11 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
             case '|user_title|':
                 $varReturn = true;
                 break;
-                case '|user_title|':
+            case '|user_title|':
                 $varReturn = true;
                 break;
 
-                case '|user_docs|':
+            case '|user_docs|':
                 $varReturn = true;
                 break;
             case '|user_credentials|':
@@ -505,7 +592,9 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         return $varReturn;
     }
-    public function TitleReplace($field){
+
+    public function TitleReplace($field)
+    {
 
         $varReturn = $field;
         switch ($field) {
@@ -571,7 +660,9 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         return $varReturn;
     }
-    public function tabela_filtro($field){
+
+    public function tabela_filtro($field)
+    {
 
         switch ($field) {
             case 'status':
@@ -607,7 +698,6 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 break;
 
 
-
             case 'valor_custo_crianca':
                 $field = "Custo Para Criança";
                 break;
@@ -624,8 +714,6 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
             case 'desconto_crianca':
                 $field = "Desconto para Crianças";
                 break;
-
-
 
 
             case 'oq_n_inclui':
@@ -659,11 +747,9 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 break;
 
 
-
             case 'image1':
                 $field = "Foto 1";
                 break;
-
 
 
             case 'image2':
@@ -671,11 +757,9 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 break;
 
 
-
             case 'image3':
                 $field = "Foto 3";
                 break;
-
 
 
             case 'image4':
@@ -683,11 +767,9 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 break;
 
 
-
             case 'image5':
                 $field = "Foto 5";
                 break;
-
 
 
             case 'disponibilidade':
@@ -808,7 +890,7 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 $field = "CPF";
                 break;
 
-                case 'ultimo_acesso':
+            case 'ultimo_acesso':
                 $field = "Último Acesso";
                 break;
 
@@ -817,39 +899,39 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         return ucwords($field);
     }
-    public function tabela_campos_filtro($response,$tabela,$campo,$valor,$outros_values){
+
+    public function tabela_campos_filtro($response, $tabela, $campo, $valor, $outros_values)
+    {
 
         $this->db->from('menu_admin');
-        $this->db->where('id',$tabela);
+        $this->db->where('id', $tabela);
         $get = $this->db->get();
         $menu_admin = $get->result_array()[0];
 
-        if($response > 0):
-        $this->db->from(''.$menu_admin['tabela'].'');
-        $this->db->where('id',$outros_values['id']);
-        $get = $this->db->get();
-        $response = $get->result_array();
+        if ($response > 0):
+            $this->db->from('' . $menu_admin['tabela'] . '');
+            $this->db->where('id', $outros_values['id']);
+            $get = $this->db->get();
+            $response = $get->result_array();
         endif;
-        if($campo == 'acoes'):
+        if ($campo == 'acoes'):
             $valor = '';
-            if($response > 0):
+            if ($response > 0):
 
 
                 $valor .= '<div style="float: left;width: 100%;margin-bottom: 8px!important;">';
                 $valor .= '<label>Situação: </label>&nbsp;&nbsp;&nbsp;';
-                $valor .= '<select class="form-control" onchange="chagestatus(this,'.$outros_values['id'].',\''.$menu_admin['tabela'].'\');">';
+                $valor .= '<select class="form-control" onchange="chagestatus(this,' . $outros_values['id'] . ',\'' . $menu_admin['tabela'] . '\');">';
 
-                if($response[0]['status'] == 1):
+                if ($response[0]['status'] == 1):
                     $valor .= '<option value="1">Ativado</option>';
                     $valor .= '<option value="0">Desativado</option>';
-                    else:
+                else:
 
-                        $valor .= '<option value="0">Desativado</option>';
-                        $valor .= '<option value="1">Ativado</option>';
+                    $valor .= '<option value="0">Desativado</option>';
+                    $valor .= '<option value="1">Ativado</option>';
 
                 endif;
-
-
 
 
                 $valor .= '</select>';
@@ -858,35 +940,35 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 $valor .= '';
 
             endif;
-            $valor .= '<a href="javascript:editar_item(\'modal\',\''.$tabela.'\','.$outros_values['id'].');" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a> &nbsp;&nbsp;&nbsp;';
-            $valor .= '<a href="javascript:delecsts(\''.$tabela.'\','.$outros_values['id'].',0);" class="btn btn-danger"><i class="fas fa-trash"></i> Excluir</a>';
+            $valor .= '<a href="javascript:editar_item(\'modal\',\'' . $tabela . '\',' . $outros_values['id'] . ');" class="btn btn-primary"><i class="fas fa-edit"></i> Editar</a> &nbsp;&nbsp;&nbsp;';
+            $valor .= '<a href="javascript:delecsts(\'' . $tabela . '\',' . $outros_values['id'] . ',0);" class="btn btn-danger"><i class="fas fa-trash"></i> Excluir</a>';
         endif;
 
-        if($campo == 'image'):
+        if ($campo == 'image'):
 
-            $valor = '<img src="'.base_url('web/imagens/'.$valor).'" style="width:100px;">';
+            $valor = '<img src="' . base_url('web/imagens/' . $valor) . '" style="width:100px;">';
 
         endif;
-        if($campo == 'data_pedido' or $campo == 'dia_ida'):
-            $date = new DateTime(''.$valor.'');
+        if ($campo == 'data_pedido' or $campo == 'dia_ida'):
+            $date = new DateTime('' . $valor . '');
             $valor = $date->format('d/m/Y');
 
         endif;
-        if($campo == 'id_user'):
+        if ($campo == 'id_user'):
             $this->db->from('clientes');
-            $this->db->where('id',$valor);
+            $this->db->where('id', $valor);
             $get = $this->db->get();
             $result = $get->result_array()[0];
             $valor = $result['nome'];
 
         endif;
-        if($campo == 'id_passeio'):
+        if ($campo == 'id_passeio'):
             $this->db->from('passeios');
-            $this->db->where('id',$valor);
+            $this->db->where('id', $valor);
             $get = $this->db->get();
 
             $count = $get->num_rows();
-            if($count > 0):
+            if ($count > 0):
                 $result = $get->result_array()[0];
                 $valor = $result['nome'];
             else:
@@ -898,34 +980,37 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
         return $valor;
     }
-    public function tabela_valor_filtro($fieldname,$fields){
 
-        if($fieldname == 'status'):
+    public function tabela_valor_filtro($fieldname, $fields)
+    {
 
-            $fields = ($fields == 0) ? '<a class="btn"><i class="mdi mdi-check-circle"></i> Ativar</a>': '<a class="btn"><i class="mdi mdi-close-box"></i> Desativar</a>';
+        if ($fieldname == 'status'):
+
+            $fields = ($fields == 0) ? '<a class="btn"><i class="mdi mdi-check-circle"></i> Ativar</a>' : '<a class="btn"><i class="mdi mdi-close-box"></i> Desativar</a>';
 
         endif;
 
         return $fields;
     }
-    public function campos_filtro($id,$fields,$tabela,$wid){
 
-        if($id > 0):
+    public function campos_filtro($id, $fields, $tabela, $wid)
+    {
 
+        if ($id > 0):
 
 
             $this->db->from('menu_admin');
-            $this->db->where('id',$tabela);
+            $this->db->where('id', $tabela);
             $get = $this->db->get();
             $menu_adm = $get->result_array()[0];
 
 
             $this->db->from($menu_adm['tabela']);
-            $this->db->where('id',$id);
+            $this->db->where('id', $id);
             $get = $this->db->get();
             $result = $get->result_array()[0];
-            $value = 'value="'.$result[''.$fields.''].'"';
-            $valuetxt = $result[''.$fields.''];
+            $value = 'value="' . $result['' . $fields . ''] . '"';
+            $valuetxt = $result['' . $fields . ''];
 
         else:
 
@@ -934,65 +1019,65 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
         endif;
 
 
-        if($fields == 'pass'):
+        if ($fields == 'pass'):
             $value = '';
             $valuetxt = '';
         endif;
 
-        $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="text" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+        $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <input type="text" class="form-control ' . $fields . '" name="' . $fields . '" id="' . $fields . '" ' . $value . '>
                     </div>';
 
-        if($fields == 'pass'):
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="password" autocomplete="off" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.' >
-                    </div>';
-        endif;
-
-        if($fields == 'dias'):
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="number" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+        if ($fields == 'pass'):
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <input type="password" autocomplete="off" class="form-control ' . $fields . '" name="' . $fields . '" id="' . $fields . '" ' . $value . ' >
                     </div>';
         endif;
 
-        if($fields == 'dia_ida' or $fields == 'dia_volta' or $fields == 'data_pedido'):
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="date" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+        if ($fields == 'dias'):
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <input type="number" class="form-control ' . $fields . '" name="' . $fields . '" id="' . $fields . '" ' . $value . '>
                     </div>';
         endif;
 
-        if($fields == 'image' or $fields == 'image1' or $fields == 'image2' or $fields == 'image3' or $fields == 'image4' or $fields == 'image5'):
-
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="file" class="form-control '.$fields.'" name="'.$fields.'" id="'.$fields.'">
+        if ($fields == 'dia_ida' or $fields == 'dia_volta' or $fields == 'data_pedido'):
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <input type="date" class="form-control ' . $fields . '" name="' . $fields . '" id="' . $fields . '" ' . $value . '>
                     </div>';
         endif;
-        if($fields == 'conteudo'):
 
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';padding: 0 20px 0 20px;">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <textarea name="'.$fields.'" style="float:left;width:100%;height:250px;padding:20px;" id="froala-editor"> '.$valuetxt.'</textarea>
+        if ($fields == 'image' or $fields == 'image1' or $fields == 'image2' or $fields == 'image3' or $fields == 'image4' or $fields == 'image5'):
+
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <input type="file" class="form-control ' . $fields . '" name="' . $fields . '" id="' . $fields . '">
                     </div>';
-
         endif;
+        if ($fields == 'conteudo'):
 
-        if($fields == 'email'):
-
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
-                        <input type="email" class="form-control" name="'.$fields.'" id="'.$fields.'" '.$value.'>
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';padding: 0 20px 0 20px;">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <textarea name="' . $fields . '" style="float:left;width:100%;height:250px;padding:20px;" id="froala-editor"> ' . $valuetxt . '</textarea>
                     </div>';
 
         endif;
-        if($fields == 'status'):
 
-            if($id > 0):
-                if($result[$fields] == 1):
+        if ($fields == 'email'):
+
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
+                        <input type="email" class="form-control" name="' . $fields . '" id="' . $fields . '" ' . $value . '>
+                    </div>';
+
+        endif;
+        if ($fields == 'status'):
+
+            if ($id > 0):
+                if ($result[$fields] == 1):
 
                     $options = '<option selected>Ativo</option>';
                     $options .= '<option>Desativado</option>';
@@ -1008,49 +1093,47 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
                 $options .= '<option>Desativado</option>';
             endif;
 
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
                   
-                  <select class="form-control" name="'.$fields.'" id="'.$fields.'">
-                  '.$options.'
+                  <select class="form-control" name="' . $fields . '" id="' . $fields . '">
+                  ' . $options . '
                   </select>
                   
                   
                     </div>';
 
 
-
         endif;
 
 
-        if($fields == 'id_user' or $fields == 'id_passeio' or $fields == 'permissoes'):
+        if ($fields == 'id_user' or $fields == 'id_passeio' or $fields == 'permissoes'):
             $options = '<option>Selecione uma Opção</option>';
 
 
+            if (isset($_GET['edit'])):
 
-            if(isset($_GET['edit'])):
 
-
-                if($fields == 'id_user'):
+                if ($fields == 'id_user'):
                     $this->db->from('clientes');
                 endif;
-                if($fields == 'id_passeio'):
+                if ($fields == 'id_passeio'):
                     $this->db->from('passeios');
                 endif;
 
-                if($fields == 'permissoes'):
+                if ($fields == 'permissoes'):
                     $this->db->from('permissoes');
                 endif;
                 $get = $this->db->get();
                 $users = $get->result_array();
 
-                foreach ($users as $val){
+                foreach ($users as $val) {
 
-                    if($val['id'] == $valuetxt):
-                        $options .= '<option value="'.$val['id'].'" selected>'.$val['nome'].'</option>';
+                    if ($val['id'] == $valuetxt):
+                        $options .= '<option value="' . $val['id'] . '" selected>' . $val['nome'] . '</option>';
 
                     else:
-                        $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
+                        $options .= '<option value="' . $val['id'] . '">' . $val['nome'] . '</option>';
 
                     endif;
 
@@ -1059,26 +1142,25 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
             else:
 
 
-
-                if($fields == 'id_user'):
+                if ($fields == 'id_user'):
                     $this->db->from('clientes');
                 endif;
-                if($fields == 'id_passeio'):
+                if ($fields == 'id_passeio'):
                     $this->db->from('passeios');
                 endif;
-                if($fields == 'permissoes'):
+                if ($fields == 'permissoes'):
                     $this->db->from('permissoes');
                 endif;
                 $get = $this->db->get();
                 $users = $get->result_array();
 
-                foreach ($users as $val){
+                foreach ($users as $val) {
 
-                    if($val['id'] == $valuetxt):
-                        $options .= '<option value="'.$val['id'].'" selected>'.$val['nome'].'</option>';
+                    if ($val['id'] == $valuetxt):
+                        $options .= '<option value="' . $val['id'] . '" selected>' . $val['nome'] . '</option>';
 
                     else:
-                        $options .= '<option value="'.$val['id'].'">'.$val['nome'].'</option>';
+                        $options .= '<option value="' . $val['id'] . '">' . $val['nome'] . '</option>';
 
                     endif;
 
@@ -1086,26 +1168,21 @@ $return = '<br><a class="media add-tooltip" style="text-align: center!important;
 
             endif;
 
-            $tfields = '<div class="form-group" style="float: left;width: '.$wid.';margin-left: 20px">
-                        <label for="recipient-name" class="control-label">'.$this->tabela_filtro(trim($fields)).':</label>
+            $tfields = '<div class="form-group" style="float: left;width: ' . $wid . ';margin-left: 20px">
+                        <label for="recipient-name" class="control-label">' . $this->tabela_filtro(trim($fields)) . ':</label>
                   
-                  <select class="js-example-basic-single form-control" name="'.$fields.'" id="'.$fields.'">
-                  '.$options.'
+                  <select class="js-example-basic-single form-control" name="' . $fields . '" id="' . $fields . '">
+                  ' . $options . '
                   </select>
                   
                   
                     </div>';
 
 
-
         endif;
 
         return $tfields;
     }
-
-
-
-
 
 
 }
