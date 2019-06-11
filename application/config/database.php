@@ -6,10 +6,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'sistema',
+	'hostname' => 'mysql06-farm56.kinghost.net',
+	'username' => 'bolsadeleiloes01',
+	'password' => 'joao0048',
+	'database' => 'bolsadeleiloes01',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
