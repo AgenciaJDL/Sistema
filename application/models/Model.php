@@ -167,11 +167,17 @@ class Model extends CI_Model
 
             endif;
 
+            if($arr['campo'] == '34' and $value['id'] == 34):
+
+                else:
+
             if ($i == 0):
                 $return .= '<td ' . $styletd . ' onclick="addSelect(' . $value['id'] . ');">' . $this->tabela_campos_filtro($menu_admin[0]['response'], $arr['campo'], trim($forExplode[$i]), $value[trim($forExplode[$i])], $value) . '</td>';
 
             else:
                 $return .= '<td ' . $styletd . '>' . $this->tabela_campos_filtro($menu_admin[0]['response'], $arr['campo'], trim($forExplode[$i]), $value[trim($forExplode[$i])], $value) . '</td>';
+
+            endif;
 
             endif;
 

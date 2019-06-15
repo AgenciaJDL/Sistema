@@ -57,33 +57,36 @@ class Ajax extends CI_Controller
         unset($_POST['tabelaid']);
 
 
-        if(isset($_POST['edit'])):
+        if(isset($_POST['iditem'])):
 
             $editid = $_POST['iditem'];
             unset($_POST['iditem']);
-
-            $this->db->from($menu_admin['tabela']);
-            $this->db->where('id',$editid);
-            $get = $this->db->get();
-            $backuptable = $get->result_array()[0];
-
-            $backup['data_alterada'] = date('d/m/Y H:i:s');
-            $backup['id_admin'] = $_SESSION['ID_ADMIN'];
-            $backup['ip_alteracao'] = $_SERVER['REMOTE_ADDR'];
+            $lastinsertbackup = 0;
 
 
-            $explodedata = explode('',$menu_admin['tb']);
+                       $this->db->from($menu_admin['tabela']);
+                       $this->db->where('id',$editid);
+                       $get = $this->db->get();
+                       $backuptable = $get->result_array()[0];
 
-            $databackup = '';
-            for($n=0;$n<count($explodedata);$n++):
 
-                $databackup .= '<<< <b>'.$explodedata[$n].': </b>'.$backuptable[$explodedata[$n]].' >>>,';
+                       $backup['data_alterada'] = date('d/m/Y H:i:s');
+                       $backup['id_admin'] = $_SESSION['ID_ADMIN'];
+                       $backup['ip_alteracao'] = $_SERVER['REMOTE_ADDR'];
 
-            endfor;
-            $backup['sql_dump'] = $databackup;
 
-            $this->db->insert('beforedata',$backup);
-            $lastinsertbackup = $this->db->insert_id();
+                       $explodedata = explode(',',$menu_admin['tb']);
+
+                       $databackup = '';
+                       for($n=0;$n<count($explodedata);$n++):
+
+                           @$databackup .= '<<< <b>'.$explodedata[$n].': </b>'.$backuptable[$explodedata[$n]].' >>>,';
+
+                       endfor;
+                       $backup['sql_dump'] = $databackup;
+
+                       $this->db->insert('beforedata',$backup);
+                       $lastinsertbackup = $this->db->insert_id();
 
             $this->db->where('id',$editid);
             $this->db->update($menu_admin['tabela'],$_POST);
@@ -169,6 +172,11 @@ endif;
                 else:
 
 
+                    if($campoexplode[$i] == 'permissoes' and isset($_SESSION['PERMISSAO_ADMIN']) and $_SESSION['PERMISSAO_ADMIN'] > 1):
+
+                        $return .= '<input type="hidden" name="permissoes" value="'.$_SESSION['PERMISSAO_ADMIN'].'">';
+                        else:
+
                     if(isset($_POST['edit'])):
                         $return .= $this->Model->campos_filtro($_POST['edit'],$campoexplode[$i],$_POST['tabela'],$campowidth);
 
@@ -177,6 +185,7 @@ endif;
 
                     endif;
 
+                    endif;
             endif;
 
 
@@ -304,6 +313,7 @@ endif;
                     $_SESSION['ID_ADMIN'] = $result['id'];
                     $_SESSION['USER_ADMIN'] = $result['user'];
                     $_SESSION['IP_ADMIN'] = $_SERVER['REMOTE_ADDR'];
+                    $_SESSION['PERMISSAO_ADMIN'] = $result['permissoes'];
                     $_SESSION['EMAIL_ADMIN'] = $result['email'];
                     $_SESSION['PASS_ADMIN'] = $result['pass'];
 
