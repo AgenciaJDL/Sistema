@@ -1,6 +1,13 @@
 <div id="content-container">
     <div id="page-head">
 
+        <style>
+            .table{
+                overflow-x: scroll;
+            }
+
+         </style>
+
         <!--Page Title-->
         <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
         <div id="page-title">
@@ -27,7 +34,7 @@
     </div>
 
 
-    <div id="page-content">
+    <div id="page-content" style="overflow-x: scroll!important;">
 
 
         <div class="panel">
@@ -43,7 +50,8 @@
 
                 <?php echo $this->Model->newbuttomtable($post);?>
 
-                <table id="demo-dt-addrow" class="table table-responsive table-bordered" cellspacing="0" width="100%">
+                <div class="table-responsive">
+                <table id="demo-dt-addrow" class="table" style="overflow-x: scroll!important;overflow-y: scroll!important;">
                     <thead>
 
                     <?php echo $this->Model->theadViewAdmin($post);?>
@@ -58,6 +66,7 @@
 
                     </tfoot>
                 </table>
+            </div>
             </div>
         </div>
         <div class="modal" role="dialog">
