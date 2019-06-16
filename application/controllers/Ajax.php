@@ -34,9 +34,12 @@ class Ajax extends CI_Controller
             $menu_admin = $get->result_array()[0];
 
 
+            if($_POST['item'] == '34' and $menu_admin['tabela'] == 'menu_admin'):
+
+                else:
             $this->db->where('id',$_POST['item']);
             $this->db->delete($menu_admin['tabela']);
-
+            endif;
             echo 11;
 
         endif;

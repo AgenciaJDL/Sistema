@@ -43,7 +43,7 @@
 
                 <?php echo $this->Model->newbuttomtable($post);?>
 
-                <table id="demo-dt-addrow" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                <table id="demo-dt-addrow" class="table table-responsive table-bordered" cellspacing="0" width="100%">
                     <thead>
 
                     <?php echo $this->Model->theadViewAdmin($post);?>
